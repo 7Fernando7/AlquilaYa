@@ -23,8 +23,8 @@ const REFRESH_TOKEN_EXPIRY = process.env.JWT_REFRESH_TOKEN_EXPIRY || '30d';
 export function generateAccessToken(payload: Omit<TokenPayload, 'iat' | 'exp'>): string {
   try {
     return jwt.sign(payload, JWT_SECRET, {
-      expiresIn: ACCESS_TOKEN_EXPIRY,
-      algorithm: 'HS256',
+      expiresIn: ACCESS_TOKEN_EXPIRY as any,
+      algorithm: 'HS256' as any,
     });
   } catch (error) {
     logger.error('Failed to generate access token:', error);
@@ -40,8 +40,8 @@ export function generateAccessToken(payload: Omit<TokenPayload, 'iat' | 'exp'>):
 export function generateRefreshToken(payload: Omit<TokenPayload, 'iat' | 'exp'>): string {
   try {
     return jwt.sign(payload, JWT_SECRET, {
-      expiresIn: REFRESH_TOKEN_EXPIRY,
-      algorithm: 'HS256',
+      expiresIn: REFRESH_TOKEN_EXPIRY as any,
+      algorithm: 'HS256' as any,
     });
   } catch (error) {
     logger.error('Failed to generate refresh token:', error);

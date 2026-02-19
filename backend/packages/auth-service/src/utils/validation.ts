@@ -1,6 +1,4 @@
-import { createLogger } from './logger';
-
-const logger = createLogger('Validation');
+// Validation utilities
 
 /**
  * Validate email format using RFC 5322 simplified pattern
@@ -18,7 +16,7 @@ export function isValidEmail(email: string): boolean {
  * @returns boolean - True if email has content
  */
 export function isEmailNotEmpty(email: string): boolean {
-  return email && email.trim().length > 0;
+  return !!(email && email.trim().length > 0);
 }
 
 /**

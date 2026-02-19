@@ -8,7 +8,7 @@ const logger = createLogger('Health-Check');
 export function createHealthCheckRouter() {
   const router = Router();
 
-  router.get('/', async (req, res: Response) => {
+  router.get('/', async (res: Response) => {
     try {
       const health = {
         status: 'ok',

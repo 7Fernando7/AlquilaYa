@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { getConnection } from '../database/connection';
-import { User, UserType, VerificationStatus } from '../database/entities/User';
-import { hashPassword } from '../utils/password';
+import { User, UserType } from '../database/entities/User';
+import { hashPassword, comparePassword } from '../utils/password';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import {
   validateRegistrationInput,
+  isValidUserType,
 } from '../utils/validation';
 import {
   ValidationError,
@@ -20,6 +21,11 @@ export interface RegisterRequest {
   password: string;
   full_name: string;
   user_type: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
 }
 
 export interface AuthResponse {
@@ -90,7 +96,7 @@ export async function register(
       password_hash: passwordHash,
       full_name,
       user_type: normalizedUserType,
-      verification_status: VerificationStatus.UNVERIFIED,
+      verification_status: 'unverified',
       notification_preferences: {
         email: true,
         push: false,
@@ -140,16 +146,96 @@ export async function register(
 /**
  * Handle user login
  * POST /auth/login
- * (To be implemented in AUTH-3)
  */
 export async function login(
-  _req: Request,
-  _res: Response,
+  req: Request,
+  res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    // TODO: Implement in AUTH-3
-    throw new InternalError('Login endpoint not yet implemented');
+    const { email, password } = req.body as LoginRequest;
+
+    logger.info(`Login attempt for email: ${email}`);
+
+    // Validate input
+    if (!email || !password) {
+      throw new ValidationError('Email and password are required', {
+        email: email ? undefined : 'Email is required',
+        password: password ? undefined : 'Password is required',
+      });
+    }
+
+    // Get database connection
+    const dataSource = getConnection();
+    const userRepository = dataSource.getRepository(User);
+
+    // Find user by email (case-insensitive)
+    const user = await userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
+
+    // Generic error message to prevent user enumeration
+    const invalidCredentialsError = new ValidationError(
+      'Invalid email or password'
+    );
+
+    if (!user) {
+      logger.warn(`Login failed: User not found: ${email}`);
+      // Don't reveal if user exists
+      throw invalidCredentialsError;
+    }
+
+    // Check if account is active (not soft deleted)
+    if (user.deleted_at) {
+      logger.warn(`Login failed: Account deleted: ${email}`);
+      throw invalidCredentialsError;
+    }
+
+    // Compare passwords (timing-safe comparison)
+    const passwordMatches = await comparePassword(password, user.password_hash);
+
+    if (!passwordMatches) {
+      logger.warn(`Login failed: Invalid password for: ${email}`);
+      // Don't reveal specific issue
+      throw invalidCredentialsError;
+    }
+
+    logger.info(`Login successful: ${user.id} (${email})`);
+
+    // Update last login timestamp
+    user.updated_at = new Date();
+    await userRepository.save(user);
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      userType: user.user_type,
+    });
+
+    const refreshToken = generateRefreshToken({
+      userId: user.id,
+      email: user.email,
+      userType: user.user_type,
+    });
+
+    // Prepare response
+    const response: AuthResponse = {
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        user_type: user.user_type,
+        verification_status: user.verification_status,
+        created_at: user.created_at.toISOString(),
+      },
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
+    };
+
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -161,8 +247,8 @@ export async function login(
  * (To be implemented in AUTH-4)
  */
 export async function refreshToken(
-  _req: Request,
-  _res: Response,
+  req: Request,
+  res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
@@ -179,8 +265,8 @@ export async function refreshToken(
  * (To be implemented in AUTH-4)
  */
 export async function logout(
-  _req: Request,
-  _res: Response,
+  req: Request,
+  res: Response,
   next: NextFunction
 ): Promise<void> {
   try {

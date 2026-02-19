@@ -5,7 +5,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
-  Check,
 } from 'typeorm';
 
 export enum UserType {
@@ -41,7 +40,8 @@ export class User {
   full_name!: string;
 
   @Column({
-    type: 'enum',
+    type: 'varchar',
+    length: 20,
     enum: UserType,
     default: UserType.SEEKER,
   })
@@ -57,7 +57,8 @@ export class User {
   address?: string;
 
   @Column({
-    type: 'enum',
+    type: 'varchar',
+    length: 20,
     enum: VerificationStatus,
     default: VerificationStatus.UNVERIFIED,
   })
@@ -66,11 +67,11 @@ export class User {
   @Column({ type: 'text', nullable: true })
   verification_document_url?: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   verification_date?: Date;
 
-  @Column({ type: 'jsonb', default: { email: true, push: false } })
-  notification_preferences!: Record<string, boolean>;
+  @Column({ type: 'simple-json', nullable: true })
+  notification_preferences?: Record<string, boolean>;
 
   @CreateDateColumn()
   created_at!: Date;
@@ -78,7 +79,7 @@ export class User {
   @UpdateDateColumn()
   updated_at!: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   deleted_at?: Date;
 
   // Helper methods

@@ -6,6 +6,7 @@ import { createLogger } from './utils/logger';
 import { initializeDatabase } from './database/connection';
 import { initializeRedis } from './cache/redis';
 import { createHealthCheckRouter } from './routes/health';
+import authRoutes from './routes/auth';
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +28,14 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Health check route (before auth middleware)
 app.use('/health', createHealthCheckRouter());
 
+// Ping route (simple liveness check)
+app.get('/ping', (_req, res) => {
+  res.json({ message: 'pong' });
+});
+
+// Auth routes
+app.use('/auth', authRoutes);
+
 // Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
@@ -47,10 +56,14 @@ async function start() {
     await initializeDatabase();
     logger.info('✅ PostgreSQL connected');
 
-    // Initialize Redis
-    logger.info('🔄 Connecting to Redis...');
-    await initializeRedis();
-    logger.info('✅ Redis connected');
+    // Initialize Redis (skip in development)
+    if (process.env.NODE_ENV !== 'development') {
+      logger.info('🔄 Connecting to Redis...');
+      await initializeRedis();
+      logger.info('✅ Redis connected');
+    } else {
+      logger.info('⏭️ Redis initialization skipped (development mode)');
+    }
 
     // Start server
     const PORT = process.env.PORT || 3001;
