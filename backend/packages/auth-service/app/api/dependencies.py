@@ -3,6 +3,7 @@ FastAPI dependencies for authentication and database sessions
 """
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthenticationCredentials
 from sqlalchemy.orm import Session
 from jose import JWTError
 
@@ -10,25 +11,29 @@ from app.database import get_db, SessionLocal
 from app.utils.jwt import verify_token, get_user_id_from_token
 from app.models import User
 
+security = HTTPBearer()
+
 
 async def get_current_user(
-    token: str = None,
+    credentials: HTTPAuthenticationCredentials = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
     """
-    Get current authenticated user from JWT token
+    Get current authenticated user from JWT token in Authorization header
 
     Usage in FastAPI routes:
         @app.get("/protected")
         async def protected_route(current_user: User = Depends(get_current_user)):
             return {"user": current_user}
     """
-    if not token:
+    if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    token = credentials.credentials
 
     try:
         user_id = get_user_id_from_token(token)

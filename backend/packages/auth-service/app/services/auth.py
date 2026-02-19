@@ -413,3 +413,73 @@ class AuthService:
 
         logger.info(f"Password reset confirmed: {user.id}")
         return user
+
+    @staticmethod
+    def logout(db: Session, access_token: str) -> bool:
+        """
+        Logout user and invalidate current session
+
+        Args:
+            db: Database session
+            access_token: User's current access token
+
+        Returns:
+            True if logout successful
+
+        Raises:
+            ValueError: If token not found or invalid
+        """
+        # Find session by access token
+        session = db.query(SessionModel).filter(
+            SessionModel.access_token == access_token,
+            SessionModel.is_active == True,
+        ).first()
+
+        if not session:
+            logger.warning(f"Logout attempt with invalid token")
+            raise ValueError("Invalid session")
+
+        # Invalidate session
+        session.is_active = False
+        db.commit()
+
+        logger.info(f"User logged out: {session.user_id}")
+        return True
+
+    @staticmethod
+    def logout_all_sessions(db: Session, user_id: str) -> int:
+        """
+        Logout user from all sessions (logout from all devices)
+
+        Args:
+            db: Database session
+            user_id: User ID
+
+        Returns:
+            Number of sessions invalidated
+
+        Raises:
+            ValueError: If user not found
+        """
+        from uuid import UUID
+        try:
+            # Convert string to UUID if needed
+            if isinstance(user_id, str):
+                user_id_uuid = UUID(user_id)
+            else:
+                user_id_uuid = user_id
+        except (ValueError, AttributeError):
+            logger.warning(f"Invalid user ID: {user_id}")
+            return 0
+
+        sessions = db.query(SessionModel).filter(
+            SessionModel.user_id == user_id_uuid,
+            SessionModel.is_active == True,
+        )
+
+        count = sessions.count()
+        sessions.update({"is_active": False})
+        db.commit()
+
+        logger.info(f"User logged out from all sessions: {user_id} ({count} sessions)")
+        return count

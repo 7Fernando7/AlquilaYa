@@ -11,6 +11,7 @@ from app.schemas.auth import (
     VerifyEmailRequest, VerifyEmailResponse,
     ResendVerificationRequest,
     LoginRequest, LoginResponse, TokenResponse,
+    RefreshTokenRequest, LogoutResponse,
     ErrorResponse
 )
 from app.services.auth import AuthService
@@ -245,7 +246,7 @@ async def login(
     }
 )
 async def refresh_token(
-    request: dict,
+    request: RefreshTokenRequest,
     db: Session = Depends(get_db),
 ):
     """
@@ -257,19 +258,16 @@ async def refresh_token(
     **Returns**: New access token with updated expiry
     """
     try:
-        if not request.get("refresh_token"):
-            raise ValueError("Refresh token required")
-
         token_data = AuthService.refresh_access_token(
             db=db,
-            refresh_token=request["refresh_token"],
+            refresh_token=request.refresh_token,
         )
 
         return TokenResponse(
             access_token=token_data["access_token"],
             expires_in=token_data["expires_in"],
             token_type=token_data["token_type"],
-            refresh_token=request["refresh_token"],  # Return existing refresh token
+            refresh_token=request.refresh_token,  # Return existing refresh token
         )
 
     except ValueError as e:
@@ -286,23 +284,43 @@ async def refresh_token(
 
 @router.post(
     "/logout",
+    response_model=LogoutResponse,
+    status_code=status.HTTP_200_OK,
     responses={
-        200: {"description": "Successfully logged out"},
         401: {"model": ErrorResponse, "description": "Not authenticated"},
     }
 )
 async def logout(
-    current_user: User = Depends(lambda: None),
+    http_request: Request,
     db: Session = Depends(get_db),
 ):
     """
-    Logout user
+    Logout user and invalidate current session
 
     **Returns**: Success message
 
-    **Note**: Implement in Phase 7
+    **Note**: Authorization header with access token required
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Logout endpoint coming in Phase 7",
-    )
+    try:
+        # Extract token from Authorization header
+        auth_header = http_request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            raise ValueError("Invalid authorization header")
+
+        access_token = auth_header.split(" ")[1]
+
+        # Perform logout
+        AuthService.logout(db=db, access_token=access_token)
+
+        return LogoutResponse(message="Successfully logged out")
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Logout failed",
+        )

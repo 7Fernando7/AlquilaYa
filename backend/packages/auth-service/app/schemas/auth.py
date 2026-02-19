@@ -212,3 +212,19 @@ class UpdateProfileRequest(BaseModel):
             "bio": "Property owner in Madrid",
             "profile_photo_url": "https://example.com/photos/john.jpg"
         }
+
+
+class RefreshTokenRequest(BaseModel):
+    """Refresh token request"""
+    refresh_token: str = Field(..., description="Refresh token from login")
+
+    class Config:
+        example = {"refresh_token": "eyJhbGc..."}
+
+
+class LogoutResponse(BaseModel):
+    """Logout response"""
+    message: str
+
+    class Config:
+        example = {"message": "Successfully logged out"}
