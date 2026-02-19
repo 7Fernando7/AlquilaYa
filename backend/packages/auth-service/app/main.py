@@ -82,8 +82,9 @@ async def shutdown_event():
 
 
 # Include routers
-from app.api.routes import auth
+from app.api.routes import auth, password
 app.include_router(auth.router)
+app.include_router(password.router)
 
 
 if __name__ == "__main__":

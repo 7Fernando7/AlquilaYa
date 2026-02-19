@@ -114,6 +114,34 @@ class LoginResponse(TokenResponse):
         }
 
 
+class PasswordResetRequest(BaseModel):
+    """Password reset request"""
+    email: EmailStr = Field(..., description="User email address")
+
+    class Config:
+        example = {"email": "john@example.com"}
+
+
+class PasswordResetConfirmRequest(BaseModel):
+    """Password reset confirmation request"""
+    reset_token: str = Field(..., description="Reset token from email")
+    new_password: str = Field(..., min_length=8, description="New password")
+
+    class Config:
+        example = {
+            "reset_token": "token_value_here",
+            "new_password": "NewSecurePass123!"
+        }
+
+
+class PasswordResetResponse(BaseModel):
+    """Password reset response"""
+    message: str
+
+    class Config:
+        example = {"message": "Password reset email sent successfully"}
+
+
 class ErrorResponse(BaseModel):
     """Standard error response"""
     detail: str

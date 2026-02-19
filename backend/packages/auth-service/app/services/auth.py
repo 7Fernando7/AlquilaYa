@@ -7,10 +7,10 @@ import secrets
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from app.models import User, EmailVerification, Session as SessionModel
+from app.models import User, EmailVerification, Session as SessionModel, PasswordReset
 from app.services.user import UserService
 from app.services.email import get_email_service
-from app.utils.password import verify_password
+from app.utils.password import verify_password, hash_password, validate_password
 from app.utils.jwt import create_access_token, create_refresh_token
 from app.config import get_settings
 
@@ -314,3 +314,102 @@ class AuthService:
             "expires_in": int(access_token_expires.total_seconds()),
             "token_type": "Bearer",
         }
+
+    @staticmethod
+    def request_password_reset(db: Session, email: str) -> bool:
+        """
+        Request password reset and send reset email
+
+        Args:
+            db: Database session
+            email: User email
+
+        Returns:
+            True if email sent successfully
+
+        Raises:
+            ValueError: If user not found
+        """
+        user = UserService.get_user_by_email(db, email)
+        if not user:
+            logger.warning(f"Password reset request for non-existent email: {email}")
+            raise ValueError("User not found")
+
+        # Delete old password reset tokens
+        db.query(PasswordReset).filter(
+            PasswordReset.user_id == user.id
+        ).delete()
+
+        # Generate reset token
+        reset_token = secrets.token_urlsafe(32)
+        expires_at = datetime.utcnow() + timedelta(
+            hours=settings.password_reset_expire_hours
+        )
+
+        # Create password reset record
+        password_reset = PasswordReset(
+            user_id=user.id,
+            reset_token=reset_token,
+            expires_at=expires_at,
+        )
+        db.add(password_reset)
+        db.commit()
+
+        # Send password reset email
+        email_service = get_email_service()
+        email_sent = email_service.send_password_reset_email(
+            email=user.email,
+            token=reset_token,
+            name=user.name,
+        )
+
+        if not email_sent:
+            logger.warning(f"Failed to send password reset email to {user.email}")
+
+        logger.info(f"Password reset requested: {user.id}")
+        return email_sent
+
+    @staticmethod
+    def confirm_password_reset(db: Session, reset_token: str, new_password: str) -> User:
+        """
+        Confirm password reset and update password
+
+        Args:
+            db: Database session
+            reset_token: Token from password reset email
+            new_password: New plain text password
+
+        Returns:
+            Updated user object
+
+        Raises:
+            ValueError: If token invalid/expired or password invalid
+        """
+        # Find password reset record
+        password_reset = db.query(PasswordReset).filter(
+            PasswordReset.reset_token == reset_token
+        ).first()
+
+        if not password_reset:
+            logger.warning(f"Invalid password reset token")
+            raise ValueError("Invalid reset token")
+
+        if not password_reset.is_valid():
+            logger.warning(f"Password reset token expired: {password_reset.user_id}")
+            raise ValueError("Reset token has expired")
+
+        # Validate new password
+        is_valid, error = validate_password(new_password)
+        if not is_valid:
+            raise ValueError(error)
+
+        # Update password
+        user = password_reset.user
+        user.password_hash = hash_password(new_password)
+        password_reset.mark_used()
+
+        db.commit()
+        db.refresh(user)
+
+        logger.info(f"Password reset confirmed: {user.id}")
+        return user
