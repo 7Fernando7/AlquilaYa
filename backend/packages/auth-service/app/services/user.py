@@ -105,6 +105,14 @@ class UserService:
         Returns:
             User object or None
         """
+        from uuid import UUID
+        try:
+            # Convert string to UUID if needed
+            if isinstance(user_id, str):
+                user_id = UUID(user_id)
+        except (ValueError, AttributeError):
+            # If invalid UUID, return None
+            return None
         return db.query(User).filter(User.id == user_id).first()
 
     @staticmethod

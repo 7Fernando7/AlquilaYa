@@ -152,3 +152,63 @@ class ErrorResponse(BaseModel):
             "detail": "Email already registered",
             "code": "EMAIL_EXISTS"
         }
+
+
+class UserProfileResponse(BaseModel):
+    """User profile response"""
+    id: str
+    email: str
+    name: str
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    profile_photo_url: Optional[str] = None
+    user_type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        example = {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "email": "john@example.com",
+            "name": "John Doe",
+            "phone": "+34912345678",
+            "bio": "Property owner in Madrid",
+            "profile_photo_url": "https://example.com/photos/john.jpg",
+            "user_type": "owner",
+            "created_at": "2026-02-19T10:30:00Z"
+        }
+
+
+class PublicUserProfileResponse(BaseModel):
+    """Public user profile (no email)"""
+    id: str
+    name: str
+    bio: Optional[str] = None
+    profile_photo_url: Optional[str] = None
+    user_type: str
+
+    class Config:
+        from_attributes = True
+        example = {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "John Doe",
+            "bio": "Property owner in Madrid",
+            "profile_photo_url": "https://example.com/photos/john.jpg",
+            "user_type": "owner"
+        }
+
+
+class UpdateProfileRequest(BaseModel):
+    """Profile update request"""
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    phone: Optional[str] = Field(None, max_length=20)
+    bio: Optional[str] = Field(None, max_length=500)
+    profile_photo_url: Optional[str] = Field(None, max_length=2048)
+
+    class Config:
+        example = {
+            "name": "John Doe Updated",
+            "phone": "+34912345678",
+            "bio": "Property owner in Madrid",
+            "profile_photo_url": "https://example.com/photos/john.jpg"
+        }
