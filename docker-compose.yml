@@ -1,0 +1,148 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: formacionia-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: formacionia
+      POSTGRES_INITDB_ARGS: >
+        -c max_connections=200
+        -c shared_buffers=256MB
+        -c effective_cache_size=1GB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - formacionia-network
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_duration=on
+      -c log_min_duration_statement=1000
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: formacionia-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - formacionia-network
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+
+  # Elasticsearch for Full-text & Geospatial Search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: formacionia-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - formacionia-network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  # Mailhog for Email Testing (Development Only)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: formacionia-mailhog
+    ports:
+      - "1025:1025"    # SMTP
+      - "8025:8025"    # Web UI
+    networks:
+      - formacionia-network
+    environment:
+      MH_STORAGE: memory
+      MH_OUTGOING_SMTP: "off"
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/packages/auth-service/Dockerfile
+    container_name: formacionia-auth-service
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      LOG_LEVEL: debug
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/formacionia
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-never-use-in-production-change-this-value}
+      CORS_ORIGIN: http://localhost:5173
+      BCRYPT_ROUNDS: 12
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - formacionia-network
+    volumes:
+      - ./backend/packages/auth-service/src:/app/src
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  formacionia-network:
+    driver: bridge

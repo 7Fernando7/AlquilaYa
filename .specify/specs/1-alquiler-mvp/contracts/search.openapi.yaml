@@ -1,0 +1,575 @@
+openapi: 3.0.0
+info:
+  title: Search Service API
+  version: 1.0.0
+  description: Property search, filtering, and recommendations for FormaconIA
+  contact:
+    name: FormaconIA Team
+    url: https://github.com/formacion/formacionia
+
+servers:
+  - url: http://localhost:3002
+    description: Development server
+  - url: https://api.formacionia.es/search
+    description: Production server
+
+paths:
+  /search/properties:
+    get:
+      summary: Search properties with filters
+      operationId: searchProperties
+      tags:
+        - Search
+      parameters:
+        # Location parameters
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          description: City name (e.g., "Madrid", "Barcelona")
+          example: Madrid
+
+        - name: neighborhood
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+          description: Specific neighborhood (optional)
+          example: Malasaña
+
+        - name: postal_code
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+          description: Spanish postal code (5 digits)
+          example: "28001"
+
+        # Price range
+        - name: price_min
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 99999
+          description: Minimum monthly price (EUR)
+          example: 500
+
+        - name: price_max
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 99999
+          description: Maximum monthly price (EUR)
+          example: 1500
+
+        # Property type
+        - name: property_type
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - piso
+                - casa
+                - habitacion
+                - estudio
+          description: Filter by property type
+          style: form
+          explode: true
+          example: [piso, estudio]
+
+        # Rooms and bathrooms
+        - name: bedrooms_min
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10
+          description: Minimum number of bedrooms
+          example: 1
+
+        - name: bedrooms_max
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10
+          description: Maximum number of bedrooms
+          example: 3
+
+        - name: bathrooms_min
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 10
+          description: Minimum number of bathrooms
+          example: 1
+
+        # Filters (lifestyle criteria)
+        - name: filters
+          in: query
+          required: false
+          description: Lifestyle filters
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - transporte_publico
+                - zona_tranquila
+                - vida_nocturna
+                - cerca_colegios
+                - parques
+          style: form
+          explode: true
+          example: [transporte_publico, zona_tranquila]
+
+        # Amenities
+        - name: amenities
+          in: query
+          required: false
+          description: Required amenities
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - aire_acondicionado
+                - calefaccion
+                - amueblado
+                - balcon
+                - wifi
+          style: form
+          explode: true
+          example: [aire_acondicionado, wifi]
+
+        # Location-based
+        - name: lat
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+          description: Latitude for geolocation search
+          example: 40.4168
+
+        - name: lon
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+          description: Longitude for geolocation search
+          example: -3.7038
+
+        - name: radius_km
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0.1
+            maximum: 50
+            default: 5
+          description: Search radius in km (requires lat/lon)
+          example: 3
+
+        # Sorting
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - relevance
+              - price_asc
+              - price_desc
+              - newest
+              - oldest
+            default: relevance
+          description: Sort order for results
+          example: price_asc
+
+        # Pagination
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-indexed)
+          example: 1
+
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Results per page
+          example: 20
+
+        # Verification filter
+        - name: verified_owners_only
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Only show properties from verified owners
+          example: true
+
+      responses:
+        '200':
+          description: Properties found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PropertySearchResult'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  total:
+                    type: integer
+                    description: Total number of properties matching query
+                    example: 42
+                  filters_applied:
+                    type: object
+                    description: Echo back the filters that were applied
+                    additionalProperties: true
+              example:
+                data:
+                  - id: 1
+                    title: "Precioso piso en Malasaña"
+                    city: Madrid
+                    neighborhood: Malasaña
+                    monthly_price: 1100
+                    bedrooms: 2
+                    bathrooms: 1
+                    square_meters: 65
+                    photo_url: "https://s3.example.com/properties/1/main.jpg"
+                    owner_verified: true
+                    amenities:
+                      - aire_acondicionado
+                      - wifi
+                    distance_km: 0.8
+                total: 42
+                pagination:
+                  page: 1
+                  limit: 20
+                  total_pages: 3
+
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Invalid price range"
+                message: "price_min must be less than price_max"
+                code: "INVALID_PARAMS"
+
+        '401':
+          description: Unauthorized (missing/invalid token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '429':
+          description: Too many requests (rate limited)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Rate limit exceeded"
+                message: "Maximum 100 searches per minute"
+                code: "RATE_LIMITED"
+                retry_after: 30
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /search/suggestions:
+    get:
+      summary: Get location/city suggestions for autocomplete
+      operationId: getSearchSuggestions
+      tags:
+        - Search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          description: Search query for locations
+          example: "mad"
+
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 10
+          description: Maximum number of suggestions
+
+      responses:
+        '200':
+          description: Location suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LocationSuggestion'
+              example:
+                suggestions:
+                  - name: "Madrid"
+                    type: "city"
+                    population: 3280782
+                  - name: "Málaga"
+                    type: "city"
+                    population: 580460
+                  - name: "Malasaña"
+                    type: "neighborhood"
+                    city: "Madrid"
+
+  /search/nearby:
+    get:
+      summary: Find properties near a coordinate (geolocation)
+      operationId: findNearbyProperties
+      tags:
+        - Search
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+          description: Latitude
+          example: 40.4168
+
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+          description: Longitude
+          example: -3.7038
+
+        - name: radius_km
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0.1
+            maximum: 50
+            default: 5
+          description: Search radius in kilometers
+
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+      responses:
+        '200':
+          description: Nearby properties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PropertySearchResult'
+                  center:
+                    type: object
+                    properties:
+                      lat:
+                        type: number
+                      lon:
+                        type: number
+                      radius_km:
+                        type: number
+
+components:
+  schemas:
+    PropertySearchResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Property ID
+        title:
+          type: string
+          description: Property title/name
+        city:
+          type: string
+        neighborhood:
+          type: string
+        postal_code:
+          type: string
+        monthly_price:
+          type: number
+          format: double
+          description: Monthly rent price in EUR
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: number
+        square_meters:
+          type: number
+        property_type:
+          type: string
+          enum: [piso, casa, habitacion, estudio]
+        amenities:
+          type: array
+          items:
+            type: string
+        owner_id:
+          type: integer
+        owner_verified:
+          type: boolean
+          description: Is the property owner verified?
+        photo_url:
+          type: string
+          format: uri
+          description: Main photo URL
+        photo_count:
+          type: integer
+          description: Total number of photos
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        distance_km:
+          type: number
+          nullable: true
+          description: Distance from search center (if location-based search)
+        relevance_score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Match score (0-100)
+
+    LocationSuggestion:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [city, neighborhood, street]
+        city:
+          type: string
+          nullable: true
+          description: Parent city (for neighborhoods)
+        population:
+          type: integer
+          nullable: true
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total_pages:
+          type: integer
+        has_next:
+          type: boolean
+        has_prev:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: User-friendly error message
+        message:
+          type: string
+          description: Detailed error explanation
+        code:
+          type: string
+          enum:
+            - INVALID_PARAMS
+            - UNAUTHORIZED
+            - RATE_LIMITED
+            - NOT_FOUND
+            - INTERNAL_ERROR
+        details:
+          type: object
+          nullable: true
+          description: Additional error context
+        retry_after:
+          type: integer
+          nullable: true
+          description: Seconds to wait before retrying (for 429 responses)
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from /auth/login endpoint
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Search
+    description: Property search and discovery endpoints
+
