@@ -12,7 +12,9 @@
       "mcp__serena__find_file",
       "Bash(pip install:*)",
       "Bash(DATABASE_URL=\"sqlite:///./test.db\" REDIS_URL=\"memory\" python -m pytest:*)",
-      "Bash(DATABASE_URL=\"sqlite:///./test.db\" python -m pytest:*)"
+      "Bash(DATABASE_URL=\"sqlite:///./test.db\" python -m pytest:*)",
+      "Bash(openssl genrsa:*)",
+      "Bash(openssl rsa:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

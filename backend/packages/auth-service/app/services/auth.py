@@ -7,9 +7,11 @@ import secrets
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from app.models import User, EmailVerification
+from app.models import User, EmailVerification, Session as SessionModel
 from app.services.user import UserService
 from app.services.email import get_email_service
+from app.utils.password import verify_password
+from app.utils.jwt import create_access_token, create_refresh_token
 from app.config import get_settings
 
 settings = get_settings()
@@ -167,3 +169,148 @@ class AuthService:
 
         logger.info(f"Verification email resent to: {email}")
         return email_sent
+
+    @staticmethod
+    def validate_credentials(db: Session, email: str, password: str) -> User:
+        """
+        Validate user credentials (email and password)
+
+        Args:
+            db: Database session
+            email: User email
+            password: Plain text password
+
+        Returns:
+            User object if credentials valid
+
+        Raises:
+            ValueError: If email not found or password invalid
+        """
+        user = UserService.get_user_by_email(db, email)
+        if not user:
+            logger.warning(f"Login attempt with non-existent email: {email}")
+            raise ValueError("Invalid email or password")
+
+        if not user.is_active:
+            logger.warning(f"Login attempt with inactive account: {email}")
+            raise ValueError("Account is inactive")
+
+        if not user.email_verified:
+            logger.warning(f"Login attempt with unverified email: {email}")
+            raise ValueError("Email not verified")
+
+        # Verify password
+        if not verify_password(password, user.password_hash):
+            logger.warning(f"Failed login attempt (bad password): {email}")
+            raise ValueError("Invalid email or password")
+
+        logger.info(f"Credentials validated: {email}")
+        return user
+
+    @staticmethod
+    def login(
+        db: Session,
+        email: str,
+        password: str,
+        ip_address: str,
+        user_agent: str
+    ) -> dict:
+        """
+        Authenticate user and create session with JWT tokens
+
+        Args:
+            db: Database session
+            email: User email
+            password: Plain text password
+            ip_address: IP address of login request
+            user_agent: User agent of login request
+
+        Returns:
+            Dict with access_token, refresh_token, expires_in
+
+        Raises:
+            ValueError: If authentication fails
+        """
+        # Validate credentials
+        user = AuthService.validate_credentials(db, email, password)
+
+        # Create JWT tokens
+        access_token = create_access_token(str(user.id))
+        refresh_token = create_refresh_token(str(user.id))
+
+        # Create session record
+        access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+        refresh_token_expires = timedelta(days=settings.refresh_token_expire_days)
+
+        session = SessionModel(
+            user_id=user.id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            expires_at=datetime.utcnow() + access_token_expires,
+        )
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
+        logger.info(f"User logged in: {user.id} ({user.email})")
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "expires_in": int(access_token_expires.total_seconds()),
+            "token_type": "Bearer",
+        }
+
+    @staticmethod
+    def refresh_access_token(db: Session, refresh_token: str) -> dict:
+        """
+        Create new access token from refresh token
+
+        Args:
+            db: Database session
+            refresh_token: Refresh token from login
+
+        Returns:
+            Dict with new access_token and expires_in
+
+        Raises:
+            ValueError: If refresh token invalid or expired
+        """
+        # Find session by refresh token
+        session = db.query(SessionModel).filter(
+            SessionModel.refresh_token == refresh_token,
+            SessionModel.is_active == True,
+        ).first()
+
+        if not session:
+            logger.warning(f"Refresh token not found or invalid")
+            raise ValueError("Invalid refresh token")
+
+        if not session.is_valid():
+            logger.warning(f"Refresh token expired: {session.user_id}")
+            raise ValueError("Refresh token expired")
+
+        # Get user
+        user = session.user
+        if not user or not user.is_active:
+            logger.warning(f"User not found or inactive: {session.user_id}")
+            raise ValueError("User not found or inactive")
+
+        # Create new access token
+        new_access_token = create_access_token(str(user.id))
+        access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+
+        # Update session with new token
+        session.access_token = new_access_token
+        session.expires_at = datetime.utcnow() + access_token_expires
+        db.commit()
+
+        logger.info(f"Access token refreshed: {user.id}")
+
+        return {
+            "access_token": new_access_token,
+            "expires_in": int(access_token_expires.total_seconds()),
+            "token_type": "Bearer",
+        }

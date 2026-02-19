@@ -2,7 +2,7 @@
 Authentication endpoints (registration, login, token refresh, logout)
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -159,6 +159,7 @@ async def resend_verification(
 @router.post(
     "/login",
     response_model=LoginResponse,
+    status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Invalid credentials"},
         403: {"model": ErrorResponse, "description": "Email not verified"},
@@ -166,6 +167,7 @@ async def resend_verification(
 )
 async def login(
     request: LoginRequest,
+    http_request: Request,
     db: Session = Depends(get_db),
 ):
     """
@@ -179,15 +181,65 @@ async def login(
 
     **Note**: Email must be verified before login
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Login endpoint coming in Phase 4",
-    )
+    try:
+        # Get client IP and user agent
+        client_ip = http_request.client.host if http_request.client else "unknown"
+        user_agent = http_request.headers.get("user-agent", "unknown")
+
+        # Perform login
+        token_data = AuthService.login(
+            db=db,
+            email=request.email,
+            password=request.password,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        )
+
+        # Get user for response
+        user = UserService.get_user_by_email(db=db, email=request.email)
+
+        return LoginResponse(
+            access_token=token_data["access_token"],
+            refresh_token=token_data["refresh_token"],
+            expires_in=token_data["expires_in"],
+            token_type=token_data["token_type"],
+            user=RegisterResponse(
+                id=str(user.id),
+                email=user.email,
+                name=user.name,
+                user_type=user.user_type.value,
+                created_at=user.created_at,
+            )
+        )
+
+    except ValueError as e:
+        error_msg = str(e)
+        if "Email not verified" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email not verified",
+            )
+        elif "Account is inactive" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is inactive",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Login failed",
+        )
 
 
 @router.post(
     "/refresh",
     response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Invalid refresh token"},
     }
@@ -203,13 +255,33 @@ async def refresh_token(
     - `refresh_token`: JWT refresh token from login
 
     **Returns**: New access token with updated expiry
-
-    **Note**: Implement in Phase 5
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Refresh endpoint coming in Phase 5",
-    )
+    try:
+        if not request.get("refresh_token"):
+            raise ValueError("Refresh token required")
+
+        token_data = AuthService.refresh_access_token(
+            db=db,
+            refresh_token=request["refresh_token"],
+        )
+
+        return TokenResponse(
+            access_token=token_data["access_token"],
+            expires_in=token_data["expires_in"],
+            token_type=token_data["token_type"],
+            refresh_token=request["refresh_token"],  # Return existing refresh token
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token refresh failed",
+        )
 
 
 @router.post(
