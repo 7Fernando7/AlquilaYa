@@ -1,0 +1,39 @@
+[flake8]
+# Flake8 configuration for Auth Service
+
+# Line length
+max-line-length = 100
+
+# Ignore these error codes
+ignore =
+    E203,  # Whitespace before ':'
+    E501,  # Line too long (handled by black)
+    W503,  # Line break before binary operator
+    W504,  # Line break after binary operator
+
+# Exclude files/directories
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    .eggs,
+    .tox,
+    .mypy_cache,
+    .pytest_cache,
+    alembic,
+    migrations,
+
+# Per-file ignores
+per-file-ignores =
+    __init__.py:F401,  # Imported but unused
+    tests/*:F401,F811,  # Test imports
+
+# Complexity
+max-complexity = 10
+
+# Statistics
+statistics = True
+count = True
