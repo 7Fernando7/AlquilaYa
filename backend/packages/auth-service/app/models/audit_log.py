@@ -2,9 +2,10 @@
 Audit log model for security event tracking
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Enum as SQLEnum, func, JSON
+from sqlalchemy import Column, String, DateTime, ForeignKey, Enum as SQLEnum, func, JSON, event
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
+from sqlalchemy.engine import Engine
 from datetime import datetime
 import uuid
 import enum
@@ -38,11 +39,8 @@ class AuditLog(Base):
     ip_address = Column(String(45), nullable=False)  # IPv4 or IPv6
     user_agent = Column(String(500), nullable=False)
 
-    # Use JSONB for PostgreSQL, JSON for others
-    try:
-        details = Column(JSONB, nullable=True)
-    except:
-        details = Column(JSON, nullable=True)
+    # Use JSON instead of JSONB for compatibility with SQLite and other databases
+    details = Column(JSON, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 

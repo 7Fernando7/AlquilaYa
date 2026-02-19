@@ -3,18 +3,11 @@ Password utilities for hashing and validation
 """
 
 import re
-from passlib.context import CryptContext
+import bcrypt
 
 from app.config import get_settings
 
 settings = get_settings()
-
-# Password hashing context with bcrypt
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,  # ~100ms per hash on modern hardware
-)
 
 
 class PasswordValidator:
@@ -86,7 +79,15 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password
     """
-    return pwd_context.hash(password)
+    # Bcrypt has a 72 byte limit, hash the password first if needed
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        import hashlib
+        password_bytes = hashlib.sha256(password_bytes).digest()
+
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -100,7 +101,18 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches hash
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    password_bytes = plain_password.encode('utf-8')
+    hashed_bytes = hashed_password.encode('utf-8')
+
+    # Handle the case where password was hashed after SHA256
+    if len(password_bytes) > 72:
+        import hashlib
+        password_bytes = hashlib.sha256(password_bytes).digest()
+
+    try:
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
+    except (ValueError, TypeError):
+        return False
 
 
 def validate_password(password: str) -> tuple[bool, str]:
