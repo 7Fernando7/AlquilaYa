@@ -81,11 +81,9 @@ async def shutdown_event():
     logger.info(f"Shutting down {settings.app_name}")
 
 
-# Include routers (will be added when routes are implemented)
-# from app.api.routes import auth, password, profile
-# app.include_router(auth.router)
-# app.include_router(password.router)
-# app.include_router(profile.router)
+# Include routers
+from app.api.routes import auth
+app.include_router(auth.router)
 
 
 if __name__ == "__main__":
