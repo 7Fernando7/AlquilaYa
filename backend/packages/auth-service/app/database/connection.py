@@ -11,14 +11,24 @@ from app.config import get_settings
 settings = get_settings()
 
 # Create database engine with connection pooling
-engine = create_engine(
-    settings.database_url,
-    poolclass=pool.NullPool if settings.app_env == "testing" else pool.QueuePool,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,  # Verify connections before using them
-    echo=settings.debug,
-)
+# SQLite doesn't support pool_size and max_overflow, so we need to handle it specially
+engine_kwargs = {
+    "echo": settings.debug,
+}
+
+if settings.database_url.startswith("sqlite"):
+    # SQLite uses NullPool by default and doesn't support pool_size/max_overflow
+    engine = create_engine(settings.database_url, **engine_kwargs)
+else:
+    # PostgreSQL and other databases support pooling
+    engine = create_engine(
+        settings.database_url,
+        poolclass=pool.NullPool if settings.app_env == "testing" else pool.QueuePool,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,  # Verify connections before using them
+        **engine_kwargs,
+    )
 
 # Session factory
 SessionLocal = sessionmaker(

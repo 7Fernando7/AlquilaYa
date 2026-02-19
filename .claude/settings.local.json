@@ -14,7 +14,8 @@
       "Bash(DATABASE_URL=\"sqlite:///./test.db\" REDIS_URL=\"memory\" python -m pytest:*)",
       "Bash(DATABASE_URL=\"sqlite:///./test.db\" python -m pytest:*)",
       "Bash(openssl genrsa:*)",
-      "Bash(openssl rsa:*)"
+      "Bash(openssl rsa:*)",
+      "Bash(python -m pytest:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
