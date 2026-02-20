@@ -8,7 +8,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
-import { Card } from '@/components/ui/Card';
 
 export function LoginPage() {
   const navigate = useNavigate();

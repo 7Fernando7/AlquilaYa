@@ -8,7 +8,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
-import { Card } from '@/components/ui/Card';
 import { validateEmail, validatePassword, validateName } from '@/utils/validators';
 import type { UserType } from '@/types/auth';
 
