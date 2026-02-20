@@ -1,19 +1,19 @@
 /**
- * Reusable Input component with validation support
+ * Elegant Input component with modern styling
  */
-
-import React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
+  icon?: React.ReactNode;
 }
 
 export function Input({
   label,
   error,
   helperText,
+  icon,
   className = '',
   id,
   ...props
@@ -23,24 +23,36 @@ export function Input({
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={inputId} className="block text-sm font-semibold text-gray-700 mb-2">
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        className={`
-          w-full px-3 py-2 border rounded-lg
-          text-gray-900 placeholder-gray-400
-          focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
-          transition-colors
-          ${error ? 'border-red-500' : 'border-gray-300'}
-          ${className}
-        `}
-        {...props}
-      />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-      {helperText && !error && <p className="mt-1 text-sm text-gray-500">{helperText}</p>}
+      <div className="relative">
+        {icon && <div className="absolute left-3 top-3.5 text-gray-400">{icon}</div>}
+        <input
+          id={inputId}
+          className={`
+            w-full px-4 py-3 border border-gray-200 rounded-xl
+            text-gray-900 placeholder-gray-400 text-base
+            bg-gray-50 hover:bg-white
+            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white
+            transition-all duration-200
+            ${icon ? 'pl-10' : ''}
+            ${error ? 'border-danger-300 focus:ring-danger-500 bg-danger-50' : 'hover:border-gray-300'}
+            ${className}
+          `}
+          {...props}
+        />
+      </div>
+      {error && (
+        <p className="mt-2 text-sm text-danger-600 flex items-center gap-1">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18.101 12.93a1 1 0 00-1.414-1.414L10 14.586l-6.687-6.687a1 1 0 00-1.414 1.414l8.1 8.1a1 1 0 001.414 0l10.1-10.1z" clipRule="evenodd" />
+          </svg>
+          {error}
+        </p>
+      )}
+      {helperText && !error && <p className="mt-2 text-sm text-gray-500">{helperText}</p>}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,9 +15,15 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background-color: #f9fafb;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
   color: #111827;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 700;
 }
 
 a {
@@ -28,4 +36,38 @@ select:disabled {
   background-color: #f3f4f6;
   color: #9ca3af;
   cursor: not-allowed;
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #0284c7, #0369a1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-ghost {
+  color: #4b5563;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-ghost:hover {
+  color: #111827;
+  background-color: #f3f4f6;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
