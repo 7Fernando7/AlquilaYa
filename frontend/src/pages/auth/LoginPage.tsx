@@ -54,7 +54,6 @@ export function LoginPage() {
       await login(credentials);
       navigate('/');
     } catch (error: any) {
-      // Handle specific error cases
       if (error.response?.status === 403) {
         const detail = error.response?.data?.detail;
         if (detail === 'Email not verified') {
@@ -62,89 +61,97 @@ export function LoginPage() {
           return;
         }
       }
-      // Error is handled by auth context
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8 animate-fadeIn">
-      {/* Background decoration */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-primary-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-      <div className="absolute -bottom-8 right-4 w-72 h-72 bg-accent-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden animate-fadeIn">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-600/10 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
-      <Card className="w-full max-w-md relative z-10">
-        <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-primary-600 to-primary-700 mb-4">
-            <span className="text-white text-xl font-bold">F</span>
+      <div className="w-full max-w-md relative z-10">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 mb-6 shadow-lg shadow-primary-500/30">
+            <span className="text-white text-2xl font-bold">F</span>
           </div>
-          <h2 className="text-3xl font-display font-bold text-gray-900">Bienvenido</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Accede a tu cuenta de FormaconIA
+          <h1 className="text-4xl font-display font-bold text-white mb-2">Bienvenido</h1>
+          <p className="text-gray-300">Accede a tu cuenta de FormaconIA</p>
+        </div>
+
+        {/* Glass card */}
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
+          <FormError message={error} />
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative group">
+              <Input
+                label="Correo Electrónico"
+                type="email"
+                name="email"
+                value={credentials.email}
+                onChange={handleChange}
+                placeholder="tu@email.com"
+                error={errors.email}
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                }
+                required
+              />
+            </div>
+
+            <div className="relative group">
+              <Input
+                label="Contraseña"
+                type="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                error={errors.password}
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                }
+                required
+              />
+            </div>
+
+            <div className="flex items-center justify-end">
+              <Link to="/forgot-password" className="text-sm text-primary-300 hover:text-primary-200 transition-colors font-medium">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
+            <Button type="submit" loading={loading} fullWidth size="lg" className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary-500/30">
+              Iniciar Sesión
+            </Button>
+          </form>
+
+          <div className="mt-8 relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 bg-white/10 text-gray-300 backdrop-blur-sm rounded-full">o continúa con</span>
+            </div>
+          </div>
+
+          <p className="mt-8 text-center text-gray-300">
+            ¿No tienes cuenta?{' '}
+            <Link to="/register" className="text-primary-300 hover:text-primary-200 font-semibold transition-colors">
+              Regístrate aquí
+            </Link>
           </p>
         </div>
-
-        <FormError message={error} />
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <Input
-            label="Correo Electrónico"
-            type="email"
-            name="email"
-            value={credentials.email}
-            onChange={handleChange}
-            placeholder="tu@email.com"
-            error={errors.email}
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            }
-            required
-          />
-
-          <Input
-            label="Contraseña"
-            type="password"
-            name="password"
-            value={credentials.password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            error={errors.password}
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            }
-            required
-          />
-
-          <div className="flex items-center justify-end">
-            <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 transition-colors">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-
-          <Button type="submit" loading={loading} fullWidth size="lg">
-            Iniciar Sesión
-          </Button>
-        </form>
-
-        <div className="mt-6 relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-3 bg-white text-gray-500">o continúa con</span>
-          </div>
-        </div>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          ¿No tienes cuenta?{' '}
-          <Link to="/register" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
-            Regístrate
-          </Link>
-        </p>
-      </Card>
+      </div>
     </div>
   );
 }
