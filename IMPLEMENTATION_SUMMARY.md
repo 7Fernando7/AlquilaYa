@@ -192,11 +192,11 @@ email_service.send_verification_email("user@example.com", "token_123", "John")
 ```bash
 # Run development server
 make dev
-# Or: python -m uvicorn app.main:app --reload --port 8001
+# Or: python -m uvicorn app.main:app --reload --port 8000
 
 # API docs available at:
-# - http://localhost:8001/docs (Swagger UI)
-# - http://localhost:8001/redoc (ReDoc)
+# - http://localhost:8000/docs (Swagger UI)
+# - http://localhost:8000/redoc (ReDoc)
 ```
 
 ---

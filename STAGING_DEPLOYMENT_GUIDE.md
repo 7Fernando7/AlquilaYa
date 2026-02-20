@@ -68,7 +68,7 @@ chmod +x deploy-staging.sh
 
 ```bash
 # Check service health
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 
 # Expected response:
 # {
@@ -141,7 +141,7 @@ docker-compose exec auth-service pytest tests/unit/ -v
 
 ```bash
 # Service health
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 
 # All services status
 docker-compose ps
@@ -180,7 +180,7 @@ docker-compose exec redis redis-cli INFO memory
 ### 1. Register a User
 
 ```bash
-curl -X POST http://localhost:8001/auth/register \
+curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "staging@example.com",
@@ -198,7 +198,7 @@ curl -X POST http://localhost:8001/auth/register \
 # Get verification token from email or logs
 # docker-compose logs auth-service | grep "verification_token"
 
-curl -X POST http://localhost:8001/auth/verify-email \
+curl -X POST http://localhost:8000/auth/verify-email \
   -H "Content-Type: application/json" \
   -d '{
     "verification_token": "YOUR_TOKEN_HERE"
@@ -210,7 +210,7 @@ curl -X POST http://localhost:8001/auth/verify-email \
 ### 3. Login
 
 ```bash
-curl -X POST http://localhost:8001/auth/login \
+curl -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "staging@example.com",
@@ -224,7 +224,7 @@ curl -X POST http://localhost:8001/auth/login \
 
 ```bash
 curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  http://localhost:8001/users/{user_id}/profile
+  http://localhost:8000/users/{user_id}/profile
 
 # Response: User profile data
 ```
@@ -232,7 +232,7 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 ### 5. Refresh Token
 
 ```bash
-curl -X POST http://localhost:8001/auth/refresh \
+curl -X POST http://localhost:8000/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{
     "refresh_token": "YOUR_REFRESH_TOKEN"
@@ -311,7 +311,7 @@ docker-compose exec redis redis-cli CONFIG SET maxmemory 1gb
 # Test login endpoint
 ab -n 1000 -c 10 -p credentials.json \
   -T application/json \
-  http://localhost:8001/auth/login
+  http://localhost:8000/auth/login
 ```
 
 ## Troubleshooting
@@ -324,8 +324,8 @@ ab -n 1000 -c 10 -p credentials.json \
 
 # Common issues:
 # 1. Port already in use
-docker lsof -i :8001
-# Kill process: lsof -ti :8001 | xargs kill -9
+docker lsof -i :8000
+# Kill process: lsof -ti :8000 | xargs kill -9
 
 # 2. Missing database
 docker-compose restart postgres

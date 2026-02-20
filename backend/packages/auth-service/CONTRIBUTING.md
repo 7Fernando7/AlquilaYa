@@ -417,7 +417,7 @@ async def endpoint(request: RequestModel, db: Session = Depends(get_db)):
     **Examples**:
 
     ```bash
-    curl -X POST http://localhost:8001/endpoint \\
+    curl -X POST http://localhost:8000/endpoint \\
       -H "Content-Type: application/json" \\
       -d '{"field1": "value", "field2": "value"}'
     ```

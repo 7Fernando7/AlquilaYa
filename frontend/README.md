@@ -29,7 +29,7 @@ This is a complete MVP frontend scaffolding with:
 
 - Node.js 18+
 - npm 9+
-- Backend running on `http://localhost:8001`
+- Backend running on `http://localhost:8000`
 
 ### Setup
 
@@ -45,7 +45,7 @@ cp .env.example .env.local
 
 3. Update `.env.local` if needed:
 ```
-VITE_API_URL=http://localhost:8001
+VITE_API_URL=http://localhost:8000
 ```
 
 4. Start development server:
@@ -281,7 +281,7 @@ npm run dev -- --port 3000
 ```
 
 ### API connection errors
-- Verify backend is running on `http://localhost:8001`
+- Verify backend is running on `http://localhost:8000`
 - Check `.env.local` has correct `VITE_API_URL`
 - Check browser console for CORS errors
 

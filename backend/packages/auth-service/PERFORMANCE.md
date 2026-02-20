@@ -217,15 +217,15 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
 
 ```bash
 # Warm up (establish connections)
-ab -n 100 -c 10 http://localhost:8001/health
+ab -n 100 -c 10 http://localhost:8000/health
 
 # Actual load test: 1000 requests, 50 concurrent
-ab -n 1000 -c 50 http://localhost:8001/health
+ab -n 1000 -c 50 http://localhost:8000/health
 
 # With POST body
 ab -n 1000 -c 50 -p credentials.json \
    -T "application/json" \
-   http://localhost:8001/auth/login
+   http://localhost:8000/auth/login
 ```
 
 **Understanding Output**:
@@ -234,7 +234,7 @@ This is ApacheBench, Version 2.3
 Benchmarking localhost (be patient)...done
 
 Server Software:        uvicorn
-Server Port:            8001
+Server Port:            8000
 
 Requests per second:    500 [#/sec]      # Throughput
 Time per request:       100 [ms]         # Average latency
@@ -266,7 +266,7 @@ class AuthUser(HttpUser):
         )
 
 # Run:
-# locust -f locustfile.py --host=http://localhost:8001
+# locust -f locustfile.py --host=http://localhost:8000
 ```
 
 ### Test Scenarios
@@ -403,14 +403,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://...
     ports:
-      - "8001:8001"
+      - "8000:8000"
 
   auth-2:
     image: formacionia/auth-service:latest
     environment:
       - DATABASE_URL=postgresql://...
     ports:
-      - "8002:8001"
+      - "8002:8000"
 
   nginx:
     image: nginx:alpine
@@ -423,9 +423,9 @@ services:
 **nginx.conf**:
 ```nginx
 upstream auth_backend {
-    server auth-1:8001;
-    server auth-2:8001;
-    server auth-3:8001;
+    server auth-1:8000;
+    server auth-2:8000;
+    server auth-3:8000;
 }
 
 server {

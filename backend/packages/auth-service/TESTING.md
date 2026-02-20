@@ -39,7 +39,7 @@ make migrate
 
 # 3. Run server
 make dev
-# Escucha en http://localhost:8001
+# Escucha en http://localhost:8000
 ```
 
 ---

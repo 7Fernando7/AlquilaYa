@@ -90,7 +90,7 @@ deploy() {
 
     # Check if auth service is healthy
     for i in {1..30}; do
-        if curl -f http://localhost:8001/health > /dev/null 2>&1; then
+        if curl -f http://localhost:8000/health > /dev/null 2>&1; then
             log_info "Auth service is healthy ✓"
             break
         fi
@@ -125,7 +125,7 @@ show_status() {
     docker-compose ps
     echo ""
     log_info "Service URLs:"
-    echo "  Auth Service:  http://localhost:8001/health"
+    echo "  Auth Service:  http://localhost:8000/health"
     echo "  PostgreSQL:    localhost:5432"
     echo "  Redis:         localhost:6379"
     echo "  Mailhog:       http://localhost:8025"
@@ -143,7 +143,7 @@ health_check() {
 
     # Check auth service
     log_info "Checking auth service..."
-    curl -s http://localhost:8001/health | python -m json.tool || log_error "Auth service health check failed"
+    curl -s http://localhost:8000/health | python -m json.tool || log_error "Auth service health check failed"
 
     # Check database
     log_info "Checking database..."

@@ -53,11 +53,11 @@ alembic upgrade head
 make dev
 ```
 
-Server starts at `http://localhost:8001`
+Server starts at `http://localhost:8000`
 
 API Documentation:
-- Swagger UI: `http://localhost:8001/docs`
-- ReDoc: `http://localhost:8001/redoc`
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
 ## Project Structure
 
@@ -236,8 +236,8 @@ See `.env.example` for all available configuration options:
 
 ### Port Already in Use
 ```bash
-# Find process on port 8001
-lsof -i :8001
+# Find process on port 8000
+lsof -i :8000
 
 # Kill it
 kill -9 <PID>

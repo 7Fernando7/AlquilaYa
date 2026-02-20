@@ -119,7 +119,7 @@ def456         postgres:15-alpine             healthy
 ghi789         redis:7-alpine                 healthy
 
 Service URLs:
-  Auth Service:  http://localhost:8001/health
+  Auth Service:  http://localhost:8000/health
   PostgreSQL:    localhost:5432
   Redis:         localhost:6379
   Mailhog:       http://localhost:8025
@@ -167,7 +167,7 @@ docker-compose exec auth-service pytest tests/unit/ -v
 
 **Health Check**:
 ```bash
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 ```
 
 **Database Status**:
@@ -222,7 +222,7 @@ Tables created automatically:
 │  ┌──────────────┐  ┌──────────────┐              │
 │  │ FastAPI Auth │  │ PostgreSQL   │              │
 │  │ Service      │  │ Database     │              │
-│  │ (Port 8001)  │  │ (Port 5432)  │              │
+│  │ (Port 8000)  │  │ (Port 5432)  │              │
 │  └──────────────┘  └──────────────┘              │
 │         │                  │                      │
 │  ┌──────────────┐  ┌──────────────┐              │
@@ -261,14 +261,14 @@ Tables created automatically:
 
 4. **Verify Deployment**:
    ```bash
-   curl http://localhost:8001/health
+   curl http://localhost:8000/health
    ./deploy-staging.sh logs
    ```
 
 5. **Test API**:
    ```bash
    # Register user
-   curl -X POST http://localhost:8001/auth/register \
+   curl -X POST http://localhost:8000/auth/register \
      -H "Content-Type: application/json" \
      -d '{"email":"test@example.com","password":"SecurePass123!","name":"Test User","user_type":"seeker"}'
    ```

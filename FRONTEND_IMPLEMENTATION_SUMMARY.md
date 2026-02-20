@@ -222,7 +222,7 @@ authApi.updateProfile(userId, data)
 ```bash
 Node.js 18+
 npm 9+
-Backend running on http://localhost:8001
+Backend running on http://localhost:8000
 ```
 
 ### Quick Start
@@ -411,7 +411,7 @@ All placeholder pages are ready for feature development:
 
 **Development (.env.local)**
 ```
-VITE_API_URL=http://localhost:8001
+VITE_API_URL=http://localhost:8000
 ```
 
 **Production (CI/CD)**
@@ -476,7 +476,7 @@ The FormaconIA frontend is **100% complete for the authentication and basic MVP 
 - ✅ **Responsive** with mobile-first design
 - ✅ **Well-documented** with README and examples
 - ✅ **Ready for feature implementation** with placeholder pages
-- ✅ **Integrated with backend** auth service on localhost:8001
+- ✅ **Integrated with backend** auth service on localhost:8000
 
 The frontend can now be deployed to staging/production and feature teams can begin implementing Search, Chat, Alerts, and Map integrations using the established patterns and component library.
 

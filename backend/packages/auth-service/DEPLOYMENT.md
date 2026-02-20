@@ -27,7 +27,7 @@ cp .env.example .env
 alembic upgrade head
 
 # Start development server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Test
@@ -108,7 +108,7 @@ docker-compose -f docker-compose.yml \
   up -d
 
 # Verify health
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 ```
 
 **Option 2: Using Docker Swarm or Kubernetes**
@@ -143,7 +143,7 @@ SQL
 
 ```bash
 # Check service health
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 
 # Response:
 # {
@@ -153,7 +153,7 @@ curl http://localhost:8001/health
 # }
 
 # Check database connectivity
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 
 # Check Redis
 docker-compose exec redis redis-cli ping
@@ -378,7 +378,7 @@ docker-compose exec redis redis-cli CONFIG SET maxmemory 256mb
 
 6. **Verify**
    ```bash
-   curl http://localhost:8001/health
+   curl http://localhost:8000/health
    docker-compose logs auth-service
    ```
 
@@ -388,6 +388,6 @@ docker-compose exec redis redis-cli CONFIG SET maxmemory 256mb
 
 For issues or questions:
 1. Check logs: `docker-compose logs auth-service`
-2. Check health endpoint: `curl http://localhost:8001/health`
+2. Check health endpoint: `curl http://localhost:8000/health`
 3. Review audit logs: `SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 50;`
 4. Check GitHub issues: https://github.com/7Fernando7/AlquilaYa/issues

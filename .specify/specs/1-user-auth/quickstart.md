@@ -90,24 +90,24 @@ SENDGRID_API_KEY=sg_...  # Get from SendGrid dashboard
 # App
 APP_ENV=development
 DEBUG=True
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8001
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
 ```
 
 ### 5. Start Auth Service
 
 ```bash
 # Terminal 1: Start server
-uvicorn app.main:app --reload --port 8001
+uvicorn app.main:app --reload --port 8000
 
 # Should see:
-# INFO:     Uvicorn running on http://127.0.0.1:8001
+# INFO:     Uvicorn running on http://127.0.0.1:8000
 # INFO:     Application startup complete
 ```
 
 Access interactive docs:
 ```
-http://localhost:8001/docs         # Swagger UI
-http://localhost:8001/redoc        # ReDoc
+http://localhost:8000/docs         # Swagger UI
+http://localhost:8000/redoc        # ReDoc
 ```
 
 ---
@@ -118,7 +118,7 @@ http://localhost:8001/redoc        # ReDoc
 
 **1. Register User**:
 ```bash
-curl -X POST http://localhost:8001/auth/register \
+curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -146,7 +146,7 @@ curl -X POST http://localhost:8001/auth/register \
 **3. Verify Email**:
 ```bash
 VERIFICATION_TOKEN="<token-from-logs>"
-curl -X POST http://localhost:8001/auth/verify-email \
+curl -X POST http://localhost:8000/auth/verify-email \
   -H "Content-Type: application/json" \
   -d "{\"verification_token\": \"$VERIFICATION_TOKEN\"}"
 
@@ -155,7 +155,7 @@ curl -X POST http://localhost:8001/auth/verify-email \
 
 **4. Login**:
 ```bash
-curl -X POST http://localhost:8001/auth/login \
+curl -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -174,7 +174,7 @@ curl -X POST http://localhost:8001/auth/login \
 **5. Access Protected Endpoint**:
 ```bash
 ACCESS_TOKEN="<token-from-login>"
-curl -X GET http://localhost:8001/users/550e8400-e29b-41d4-a716-446655440000/profile \
+curl -X GET http://localhost:8000/users/550e8400-e29b-41d4-a716-446655440000/profile \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 
 # Response: User profile data
@@ -182,7 +182,7 @@ curl -X GET http://localhost:8001/users/550e8400-e29b-41d4-a716-446655440000/pro
 
 ### Using Swagger UI (Easier)
 
-1. Open http://localhost:8001/docs
+1. Open http://localhost:8000/docs
 2. Click "Register" endpoint
 3. Click "Try it out"
 4. Fill in: email, password, name, user_type
@@ -218,7 +218,7 @@ install:
 	pip install -e .[dev]
 
 dev:
-	python -m uvicorn app.main:app --reload --port 8001
+	python -m uvicorn app.main:app --reload --port 8000
 
 test:
 	pytest -v
@@ -295,8 +295,8 @@ OSError: [Errno 98] Address already in use
 
 **Solution**:
 ```bash
-# Find process on port 8001
-lsof -i :8001
+# Find process on port 8000
+lsof -i :8000
 
 # Kill it
 kill -9 <PID>
@@ -379,7 +379,7 @@ make test
 
 ### Read API Documentation
 ```bash
-# Navigate to http://localhost:8001/docs
+# Navigate to http://localhost:8000/docs
 ```
 
 ### Explore Code

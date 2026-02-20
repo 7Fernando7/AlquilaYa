@@ -199,7 +199,7 @@ Breakdown by module:
 make dev
 
 # In another terminal, test endpoints
-curl -X POST http://localhost:8001/auth/register \
+curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -212,8 +212,8 @@ curl -X POST http://localhost:8001/auth/register \
 ### Using Swagger UI
 
 Once the service is running:
-- **Swagger**: http://localhost:8001/docs
-- **ReDoc**: http://localhost:8001/redoc
+- **Swagger**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
 Aquí puedes:
 - Ver todos los endpoints
@@ -230,7 +230,7 @@ Aquí puedes:
 #!/bin/bash
 set -e
 
-API="http://localhost:8001"
+API="http://localhost:8000"
 
 # 1. Register
 echo "📝 Registering..."
@@ -365,7 +365,7 @@ git push
 
 ### Where to Find Information
 
-- **API Documentation**: http://localhost:8001/docs (when running)
+- **API Documentation**: http://localhost:8000/docs (when running)
 - **Testing Guide**: [backend/packages/auth-service/TESTING.md](./backend/packages/auth-service/TESTING.md)
 - **CI/CD Guide**: [.github/WORKFLOWS.md](./.github/WORKFLOWS.md)
 - **Development Setup**: [CLAUDE.md](./CLAUDE.md)

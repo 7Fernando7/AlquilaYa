@@ -48,7 +48,7 @@ paths:
             type: string
             pattern: '^\d{5}$'
           description: Spanish postal code (5 digits)
-          example: "28001"
+          example: "28000"
 
         # Price range
         - name: price_min

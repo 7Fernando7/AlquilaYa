@@ -431,14 +431,14 @@ pip install -r requirements.txt
 alembic upgrade head
 
 # 5. Start auth service
-python -m uvicorn app.main:app --reload --port 8001
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 ### Test Registration Flow
 
 ```bash
 # 1. Register
-curl -X POST http://localhost:8001/auth/register \
+curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"SecurePass123!","name":"Test User","user_type":"seeker"}'
 
@@ -446,18 +446,18 @@ curl -X POST http://localhost:8001/auth/register \
 # In test: verification token is logged
 
 # 3. Verify email
-curl -X POST http://localhost:8001/auth/verify-email \
+curl -X POST http://localhost:8000/auth/verify-email \
   -H "Content-Type: application/json" \
   -d '{"verification_token":"<token-from-logs>"}'
 
 # 4. Login
-curl -X POST http://localhost:8001/auth/login \
+curl -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"SecurePass123!"}'
 # Response: { "access_token": "...", "refresh_token": "...", "expires_in": 900 }
 
 # 5. Access protected endpoint
-curl -X GET http://localhost:8001/users/1/profile \
+curl -X GET http://localhost:8000/users/1/profile \
   -H "Authorization: Bearer <access_token>"
 ```
 
@@ -501,7 +501,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### Scaling Considerations
