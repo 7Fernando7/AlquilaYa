@@ -1,0 +1,53 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      working-directory: backend/packages/auth-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Format check with black
+      working-directory: backend/packages/auth-service
+      continue-on-error: true
+      run: |
+        black --check app tests
+
+    - name: Sort imports with isort
+      working-directory: backend/packages/auth-service
+      continue-on-error: true
+      run: |
+        isort --check-only app tests
+
+    - name: Security check with bandit
+      working-directory: backend/packages/auth-service
+      continue-on-error: true
+      run: |
+        pip install bandit
+        bandit -r app -f json -o bandit-report.json || true
+        bandit -r app
+
+    - name: Dependency audit with safety
+      working-directory: backend/packages/auth-service
+      continue-on-error: true
+      run: |
+        pip install safety
+        safety check --json || true
+        safety check
