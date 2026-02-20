@@ -2,18 +2,15 @@
  * User registration page
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { FormError } from '@/components/ui/FormError';
 import { validateEmail, validatePassword, validateName } from '@/utils/validators';
 import type { UserType } from '@/types/auth';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { register, loading, error, clearError } = useAuth();
+  const { register, error, clearError } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -23,6 +20,7 @@ export function RegisterPage() {
     user_type: 'seeker' as UserType,
   });
 
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
@@ -65,12 +63,14 @@ export function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
+
+    setIsLoading(true);
 
     try {
       await register({
@@ -82,155 +82,194 @@ export function RegisterPage() {
 
       // Redirect to verification page
       navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
-    } catch (error) {
+    } catch (err: any) {
       // Error is handled by auth context
+      console.error('Registration error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const displayError = error;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden animate-fadeIn">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/50 to-white pointer-events-none"></div>
+    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-gray-900 via-slate-900 to-slate-800">
+      {/* Gradient Orbs */}
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
 
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none opacity-30"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl pointer-events-none opacity-30"></div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo and Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 mb-6">
-            <span className="text-white text-2xl font-bold">F</span>
+      {/* Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">F</span>
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-center text-white mb-2">
+              Crea tu cuenta
+            </h1>
+            <p className="text-center text-gray-400 text-sm">
+              Únete a FormaconIA y encuentra tu hogar ideal
+            </p>
           </div>
-          <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">Crea tu cuenta</h1>
-          <p className="text-gray-600 text-base">Únete a FormaconIA y encuentra tu hogar ideal</p>
-        </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100/50 p-8">
-          <FormError message={error} />
+          {/* Card */}
+          <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+            {/* Error Message */}
+            {displayError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-700">{displayError}</p>
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <Input
-                label="Correo Electrónico"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="correo@ejemplo.com"
-                error={errors.email}
-                icon={
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                }
-                required
-              />
-            </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email Input */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Correo Electrónico
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="correo@ejemplo.com"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white"
+                  required
+                  disabled={isLoading}
+                />
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+              </div>
 
-            <div>
-              <Input
-                label="Nombre Completo"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Juan García López"
-                error={errors.name}
-                icon={
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                }
-                required
-              />
-            </div>
+              {/* Name Input */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nombre Completo
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Juan García López"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white"
+                  required
+                  disabled={isLoading}
+                />
+                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+              </div>
 
-            <div>
-              <label htmlFor="user_type" className="block text-sm font-semibold text-gray-700 mb-2.5">
-                ¿Quién eres?
-              </label>
-              <select
-                id="user_type"
-                name="user_type"
-                value={formData.user_type}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 bg-gray-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              {/* User Type Select */}
+              <div>
+                <label htmlFor="user_type" className="block text-sm font-semibold text-gray-700 mb-2">
+                  ¿Quién eres?
+                </label>
+                <select
+                  id="user_type"
+                  name="user_type"
+                  value={formData.user_type}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white"
+                  disabled={isLoading}
+                >
+                  <option value="seeker">Buscador de vivienda</option>
+                  <option value="owner">Propietario / Casero</option>
+                </select>
+              </div>
+
+              {/* Password Input */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Contraseña
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white"
+                  required
+                  disabled={isLoading}
+                />
+                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                {passwordErrors.length > 0 && (
+                  <ul className="mt-3 space-y-2 text-sm">
+                    {passwordErrors.map((err, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-amber-600">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {err}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Confirm Password Input */}
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Confirmar Contraseña
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white"
+                  required
+                  disabled={isLoading}
+                />
+                {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading || !formData.email || !formData.password || !formData.name}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
               >
-                <option value="seeker" className="bg-white text-gray-900">Buscador de vivienda</option>
-                <option value="owner" className="bg-white text-gray-900">Propietario / Casero</option>
-              </select>
-            </div>
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Registrándose...
+                  </>
+                ) : (
+                  'Registrarse'
+                )}
+              </button>
+            </form>
 
-            <div>
-              <Input
-                label="Contraseña"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Mínimo 8 caracteres"
-                error={errors.password}
-                icon={
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                }
-                required
-              />
-              {passwordErrors.length > 0 && (
-                <ul className="mt-3 space-y-2 text-sm">
-                  {passwordErrors.map((err, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-amber-600">
-                      <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {err}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            {/* Sign In Link */}
+            <p className="text-center text-gray-600 text-sm">
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+                Inicia sesión
+              </Link>
+            </p>
+          </div>
 
-            <div>
-              <Input
-                label="Confirmar Contraseña"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Repite tu contraseña"
-                error={errors.confirmPassword}
-                icon={
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                }
-                required
-              />
-            </div>
-
-            <Button type="submit" loading={loading} fullWidth size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all mt-1">
-              Registrarse
-            </Button>
-          </form>
-
-          <p className="mt-6 text-center text-gray-600 text-sm">
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
-              Inicia sesión
-            </Link>
+          {/* Legal Text */}
+          <p className="text-center text-gray-500 text-xs mt-6">
+            Al registrarte aceptas nuestros{' '}
+            <a href="#" className="text-gray-400 hover:text-gray-300 underline transition-colors">
+              términos de servicio
+            </a>
           </p>
         </div>
-
-        {/* Footer text */}
-        <p className="mt-8 text-center text-xs text-gray-500">
-          Al registrarte aceptas nuestros{' '}
-          <a href="#" className="text-gray-600 hover:text-gray-700 underline">
-            términos de servicio
-          </a>
-        </p>
       </div>
     </div>
   );
