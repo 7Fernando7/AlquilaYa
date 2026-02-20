@@ -3,12 +3,12 @@ User model for authentication and profile management
 """
 
 from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum, func
-from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
 import enum
 
 from app.database import Base
+from app.models.uuid_type import GUID
 
 
 class UserType(str, enum.Enum):
@@ -24,7 +24,7 @@ class User(Base):
 
     # Primary key
     id = Column(
-        UUID(as_uuid=True),
+        GUID,
         primary_key=True,
         default=uuid.uuid4,
         nullable=False,

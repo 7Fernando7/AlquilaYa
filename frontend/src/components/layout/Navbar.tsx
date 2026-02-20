@@ -24,7 +24,7 @@ export function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-primary-600 to-primary-700">
-              <span className="text-white font-bold text-sm">F</span>
+              <span className="text-white font-bold text-sm"></span>
             </div>
             <span className="text-xl font-display font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
               FormaconIA

@@ -2,8 +2,11 @@
 Authentication endpoints (registration, login, token refresh, logout)
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from app.database import get_db
 from app.schemas.auth import (
@@ -75,6 +78,9 @@ async def register(
             detail=str(e),
         )
     except Exception as e:
+        import traceback
+        logger.error(f"Unexpected error during registration: {str(e)}")
+        logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Registration failed",

@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
 
     # Database
-    database_url: str = "postgresql://postgres:postgres@localhost:5432/formacion_auth"
+    database_url: str = "sqlite:///./formacionia_dev.db"
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     rate_limit_lock_minutes: int = 15
 
     # Email Configuration
-    email_provider: str = "sendgrid"  # or "aws_ses"
+    email_provider: str = "mock"  # or "sendgrid", "aws_ses"
     sendgrid_api_key: str = ""
     email_from: str = "noreply@formacion.ai"
     email_from_name: str = "FormaconIA"
@@ -55,6 +55,8 @@ class Settings(BaseSettings):
     # CORS Configuration
     allowed_origins: list = [
         "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:5174",
         "http://localhost:8000",
         "http://localhost:8001",
     ]
