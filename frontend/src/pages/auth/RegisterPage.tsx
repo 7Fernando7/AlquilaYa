@@ -89,26 +89,26 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden animate-fadeIn">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-600/10 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden animate-fadeIn">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/50 to-white pointer-events-none"></div>
+
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none opacity-30"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl pointer-events-none opacity-30"></div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 mb-6 shadow-lg shadow-primary-500/30">
+        {/* Logo and Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 mb-6">
             <span className="text-white text-2xl font-bold">F</span>
           </div>
-          <h1 className="text-4xl font-display font-bold text-white mb-2">Únete a nosotros</h1>
-          <p className="text-gray-300">Crea tu cuenta y comienza a buscar propiedades</p>
+          <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">Crea tu cuenta</h1>
+          <p className="text-gray-600 text-base">Únete a FormaconIA y encuentra tu hogar ideal</p>
         </div>
 
-        {/* Glass card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100/50 p-8">
           <FormError message={error} />
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -119,7 +119,7 @@ export function RegisterPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="tu@email.com"
+                placeholder="correo@ejemplo.com"
                 error={errors.email}
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +137,7 @@ export function RegisterPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Juan García"
+                placeholder="Juan García López"
                 error={errors.name}
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,18 +149,18 @@ export function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="user_type" className="block text-sm font-semibold text-white mb-2">
-                Tipo de Usuario
+              <label htmlFor="user_type" className="block text-sm font-semibold text-gray-700 mb-2.5">
+                ¿Quién eres?
               </label>
               <select
                 id="user_type"
                 name="user_type"
                 value={formData.user_type}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 rounded-xl text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 bg-gray-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               >
-                <option value="seeker" className="bg-slate-800 text-white">Buscador de vivienda</option>
-                <option value="owner" className="bg-slate-800 text-white">Propietario</option>
+                <option value="seeker" className="bg-white text-gray-900">Buscador de vivienda</option>
+                <option value="owner" className="bg-white text-gray-900">Propietario / Casero</option>
               </select>
             </div>
 
@@ -183,7 +183,7 @@ export function RegisterPage() {
               {passwordErrors.length > 0 && (
                 <ul className="mt-3 space-y-2 text-sm">
                   {passwordErrors.map((err, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-amber-300">
+                    <li key={idx} className="flex items-center gap-2 text-amber-600">
                       <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
@@ -212,18 +212,26 @@ export function RegisterPage() {
               />
             </div>
 
-            <Button type="submit" loading={loading} fullWidth size="lg" className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary-500/30 mt-7">
+            <Button type="submit" loading={loading} fullWidth size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all mt-1">
               Registrarse
             </Button>
           </form>
 
-          <p className="mt-8 text-center text-gray-300">
+          <p className="mt-6 text-center text-gray-600 text-sm">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="text-primary-300 hover:text-primary-200 font-semibold transition-colors">
+            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
               Inicia sesión
             </Link>
           </p>
         </div>
+
+        {/* Footer text */}
+        <p className="mt-8 text-center text-xs text-gray-500">
+          Al registrarte aceptas nuestros{' '}
+          <a href="#" className="text-gray-600 hover:text-gray-700 underline">
+            términos de servicio
+          </a>
+        </p>
       </div>
     </div>
   );

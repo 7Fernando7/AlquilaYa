@@ -65,37 +65,37 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden animate-fadeIn">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-600/10 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden animate-fadeIn">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/50 to-white pointer-events-none"></div>
+
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl pointer-events-none opacity-30"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none opacity-30"></div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 mb-6 shadow-lg shadow-primary-500/30">
+        {/* Logo and Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 mb-6">
             <span className="text-white text-2xl font-bold">F</span>
           </div>
-          <h1 className="text-4xl font-display font-bold text-white mb-2">Bienvenido</h1>
-          <p className="text-gray-300">Accede a tu cuenta de FormaconIA</p>
+          <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">Bienvenido de vuelta</h1>
+          <p className="text-gray-600 text-base">Accede a tu cuenta de FormaconIA</p>
         </div>
 
-        {/* Glass card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100/50 p-8">
           <FormError message={error} />
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="relative group">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
               <Input
                 label="Correo Electrónico"
                 type="email"
                 name="email"
                 value={credentials.email}
                 onChange={handleChange}
-                placeholder="tu@email.com"
+                placeholder="correo@ejemplo.com"
                 error={errors.email}
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ export function LoginPage() {
               />
             </div>
 
-            <div className="relative group">
+            <div>
               <Input
                 label="Contraseña"
                 type="password"
@@ -125,32 +125,31 @@ export function LoginPage() {
             </div>
 
             <div className="flex items-center justify-end">
-              <Link to="/forgot-password" className="text-sm text-primary-300 hover:text-primary-200 transition-colors font-medium">
+              <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
 
-            <Button type="submit" loading={loading} fullWidth size="lg" className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg shadow-primary-500/30">
+            <Button type="submit" loading={loading} fullWidth size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all">
               Iniciar Sesión
             </Button>
           </form>
 
-          <div className="mt-8 relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white/10 text-gray-300 backdrop-blur-sm rounded-full">o continúa con</span>
-            </div>
-          </div>
-
-          <p className="mt-8 text-center text-gray-300">
+          <p className="mt-6 text-center text-gray-600 text-sm">
             ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-primary-300 hover:text-primary-200 font-semibold transition-colors">
-              Regístrate aquí
+            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+              Regístrate
             </Link>
           </p>
         </div>
+
+        {/* Footer text */}
+        <p className="mt-8 text-center text-xs text-gray-500">
+          Al iniciar sesión aceptas nuestros{' '}
+          <a href="#" className="text-gray-600 hover:text-gray-700 underline">
+            términos de servicio
+          </a>
+        </p>
       </div>
     </div>
   );
