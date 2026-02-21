@@ -113,17 +113,26 @@ Each service handles a distinct domain, enabling independent scaling:
 - **Verification Records**: Document verification status, owner reputation, fraud scores
 - **Public Data Cache**: Neighborhood info, transport APIs, legal data
 
-### Tech Stack (To Be Decided)
-The following decisions should be made during the planning phase for MVP features:
+### Tech Stack (✅ Decided)
+
+**Status**: Locked in for MVP development (2026-02-19)
+**See**: [`TECH-STACK.md`](./TECH-STACK.md) for complete architecture and rationale
 
 | Layer | Decision | Rationale |
 |-------|----------|-----------|
-| Frontend | ? | Choose based on real-time requirements (chat, notifications) and MVP timeline |
-| Backend API | ? | Choose based on AI/ML integration needs and team expertise |
-| Search Engine | ? | Required for natural language search - evaluate Elasticsearch, Milvus, or cloud solutions |
-| Database | ? | Choose based on relational vs. document needs and scalability requirements |
-| Message Queue | ? | Optional for MVP, needed if asynchronous processing is required |
-| ML/AI Platform | ? | For fraud detection, price prediction, recommendation engine |
+| Frontend | React 18+ + TypeScript + Vite | Real-time support (Socket.io), mature ecosystem, fast development |
+| Backend API | Python 3.11+ + FastAPI | Excellent for ML/AI integration, async support, rapid prototyping |
+| Search Engine | Elasticsearch 8+ | NLP capabilities, vector embeddings, scalable full-text search |
+| Database | PostgreSQL 14+ + Redis 7+ | ACID compliance + high-speed cache/realtime data |
+| Message Queue | Built-in with Redis | Pub/Sub for notifications, async task queue ready with Celery |
+| ML/AI Platform | Hybrid: Claude API + Python ML | Claude for NLP/analysis, Python (scikit-learn) for fraud/pricing models |
+
+**Key Tech Decisions**:
+- **Microservices**: Each service (Auth, Properties, Search, Messaging) is independent FastAPI app
+- **Real-time**: Socket.io for chat, Redis Pub/Sub for notifications
+- **Containerization**: Docker + Docker Compose for local development
+- **Testing**: pytest (backend), Vitest (frontend), Playwright (E2E)
+- **CI/CD**: GitHub Actions pipeline
 
 ## Key Information
 
@@ -143,7 +152,7 @@ The following decisions should be made during the planning phase for MVP feature
 - Neighborhood information and reviews
 - Property owner reputation system
 
-**Development Approach**: Specification-driven using SpecKit. No architectural decisions are locked in until features require them.
+**Development Approach**: Specification-driven using SpecKit. Tech stack decisions are locked in (see `TECH-STACK.md`). Proceed with feature specification and implementation.
 
 ## Git Conventions
 

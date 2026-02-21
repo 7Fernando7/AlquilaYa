@@ -1,50 +1,51 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM python:3.14-slim as builder
 
-WORKDIR /app
+WORKDIR /tmp
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
+# Install system dependencies for building
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Copy requirements and install Python dependencies
+COPY backend/packages/auth-service/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY src ./src
-
-# Build TypeScript
-RUN npm run build
-
-# Production stage
-FROM node:20-alpine
+# Runtime stage
+FROM python:3.14-slim
 
 WORKDIR /app
 
 # Install runtime dependencies only
-RUN apk add --no-cache dumb-init
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package*.json ./
+# Copy Python dependencies from builder
+COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Copy application code
+COPY backend/packages/auth-service /app
 
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
-
-# Create logs directory
-RUN mkdir -p logs
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
+# Expose port
+EXPOSE 8000
 
-# Start application
-CMD ["node", "dist/index.js"]
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    APP_ENV=production
+
+# Run the application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
