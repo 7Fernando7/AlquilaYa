@@ -26,10 +26,10 @@ exclude =
     alembic,
     migrations,
 
-# Per-file ignores
+
 per-file-ignores =
-    __init__.py:F401,  # Imported but unused
-    tests/*:F401,F811,  # Test imports
+    __init__.py:F401
+    tests/*:F401,F811
 
 # Complexity
 max-complexity = 10
